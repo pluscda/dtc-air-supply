@@ -1,0 +1,8 @@
+{
+  "appId": "asvue.datacom.tw",
+  "appName": "asVue",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "dist",
+  "cordova": {}
+}

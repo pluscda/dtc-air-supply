@@ -1,0 +1,8 @@
+{
+  "appId": "asvue.datacom.tw",
+  "appName": "空中後送",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "dist",
+  "cordova": {}
+}

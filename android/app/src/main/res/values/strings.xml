@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">asVue</string>
+    <string name="title_activity_main">asVue</string>
+    <string name="package_name">asvue.datacom.tw</string>
+    <string name="custom_url_scheme">asvue.datacom.tw</string>
+</resources>

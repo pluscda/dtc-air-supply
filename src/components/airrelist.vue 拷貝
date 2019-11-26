@@ -1,0 +1,392 @@
+<template>
+    <div id="HelloWorld" class="demo">
+        <v-app>
+            <v-row>
+                <v-col>
+                    <v-hover v-slot:default="{ hover }" :open-delay="0" :close-delay="0" :disabled="false" :value="false">
+                        <v-card class="mx-auto" width="800px" :elevation="hover ? 12 : 2">
+                            <v-system-bar color="deep-orange lighten-1"></v-system-bar>
+                            <v-toolbar color="deep-orange lighten-2" dark>
+                                <v-spacer></v-spacer>
+                                <v-toolbar-title>
+                                    <v-spacer></v-spacer>
+                                    <v-row>
+                                        <v-col>
+                                            <v-text-field v-model="search" label="搜尋" single-line hide-details>
+                                            </v-text-field>
+                                        </v-col>
+                                        <v-col>
+                                            <v-btn text color="grey lighten-3" v-on:click="SettingClick()">設定
+                                            </v-btn>
+                                        </v-col>
+                                    </v-row>
+                                </v-toolbar-title>
+                                <div class="flex-grow-1"></div>
+                            </v-toolbar>
+                            <v-container class="pa-2" fluid>
+                                <v-row>
+                                    <v-col>
+                                        <v-data-table :headers="headers" :items="desserts" :search="search">
+                                        </v-data-table>
+                                    </v-col>
+                                </v-row>
+                            </v-container>
+                        </v-card>
+                    </v-hover>
+                </v-col>
+            </v-row>
+            <v-row justify="center">
+                <v-dialog v-model="MessageDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+                    <v-card>
+                        <v-toolbar color="blue lighten-3">
+                            <v-btn icon v-on:click="MessageDialog = false">
+                                <v-icon>mdi-close</v-icon>
+                            </v-btn>
+                            <v-toolbar-title>設定</v-toolbar-title>
+                            <v-spacer></v-spacer>
+                            <v-toolbar-items>
+                                <v-btn dark text v-on:click="SettingSaveClick()">存檔</v-btn>
+                            </v-toolbar-items>
+                        </v-toolbar>
+                        <v-list three-line subheader>
+                            <v-subheader>設定航空公司</v-subheader>
+                            <v-list-item>
+                                <v-list-item-content>
+                                    <v-list-item-title></v-list-item-title>
+                                    <v-list-item-subtitle>請選擇以下一間航空公司當作初使值</v-list-item-subtitle>
+                                    <v-row>
+                                        <v-col>
+                                            <v-select v-model="airreswitch" label="請選擇航空公司" :items="sitems" chips solo></v-select>
+                                        </v-col>
+                                    </v-row>
+                                </v-list-item-content>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                </v-dialog>
+                <v-dialog v-model="MessageAlertDialog" persistent max-width="290">
+                    <v-card>
+                        <v-card-title class="headline">{{titleMessagebar}}</v-card-title>
+                        <v-card-text>
+                            {{messageshowstring}}
+                        </v-card-text>
+                        <v-card-actions>
+                            <div class="flex-grow-1"></div>
+                            <v-btn rounded color="light-green accent-3" v-on:click="EnterDialogClick()">確定</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+            </v-row>
+        </v-app>
+    </div>
+</template>
+<script>
+import axios from 'axios';
+import { openDB, deleteDB, wrap, unwrap } from 'idb';
+
+
+export default {
+    name: "HelloWorld",
+    props: ["ReqId", "Pname", "PId", "Sex", "BirthDate", "SendDate"],
+    components: {},
+    data: () => ({
+        searchstring: null,
+        search: null,
+        titleMessagebar: null,
+        MessageDialog: false,
+        MessageAlertDialog: false,
+        messageshowstring: null,
+        airreswitch: null,
+        sitems: ['凌天', '飛特立'],
+        headers: [{
+                text: '',
+                align: 'center',
+                sortable: false,
+                value: 'name',
+            },
+            { text: '身份證字號', value: 'patintId', align: 'left' },
+            { text: '姓名', value: 'patientName', align: 'left' },
+            { text: '航空', value: 'flycomp', align: 'left' },
+        ],
+        desserts: [],
+    }),
+
+    watch: {
+        airreswitch(val) {
+
+            if (val != null) {
+                const sTemp = "您的選擇列表清單 : " + val;
+                this.titleMessagebar = "貼心提醒: 請記得存檔";
+                this.messageshowstring = sTemp;
+                this.MessageAlertDialog = true;
+            }
+        },
+    },
+    created: function() {
+
+        this.titleMessagebar = "提示訊息";
+        this.messageshowstring = "請您設定航空公司列表初使值";
+
+    },
+    mounted: function() {
+
+        /*
+                axios.get('https://v2.airreferral.datacom.com.tw/mobile/GetAirCraft.ashx', {
+
+                }).then(res => {
+                    //20191014 要求回應 Bruce Chuang
+
+                    //this.ClearAllIndexDB();
+
+
+                    console.log(res);
+
+
+                }).catch(err => {
+                    //20191014 要求錯誤 Bruce Chuang
+
+
+                    //console.log(err);
+                });
+
+                */
+
+        this.titletoolbar = "凌天";
+        this.MessageAlertDialog = true;
+
+    },
+    activated: function() {
+
+
+
+    },
+    methods: {
+
+        openairDBread: function() {
+
+            const GO = openDB("airset", 1).then(db => {
+
+                return db.transaction('airset', 'readonly').objectStore('airset').getAll();
+
+            }).then(allSavedItems => {
+
+                if (allSavedItems.length !== 0)
+                    this.searchstring = allSavedItems[0].searchstring;
+
+            });
+
+
+
+        },
+        EnterDialogClick: function() {
+
+
+            this.MessageAlertDialog = false;
+        },
+        SettingClick: function() {
+
+            this.MessageDialog = true;
+
+        },
+        SettingSaveClick: function() {
+
+
+            this.MessageDialog = false;
+
+
+            this.SettingSaveIndex();
+
+
+            this.SearchAirrlist();
+
+        },
+        SettingSaveIndex: function() {
+
+
+            this.searchstring = this.search;
+
+             var obj = {
+                airset: this.searchstring,
+              
+            };
+
+            console.log("Setting Save Start");
+
+            const GO = openDB('airset', 1).then(db => {
+                db.transaction('airset', 'readwrite').objectStore('airset').add(obj);
+            });
+
+            console.log("Setting Save End");
+
+
+        },
+        SearchAirrlist: function() {
+
+           
+            axios.get('https://v2.airreferral.datacom.com.tw/mobile/GetAirCraft.ashx', {
+
+            }).then(res => {
+                //20191014 要求回應 Bruce Chuang
+
+
+                console.log(res);
+
+
+            }).catch(err => {
+                //20191014 要求錯誤 Bruce Chuang
+
+                console.log(err);
+
+              
+            });
+         
+
+
+
+
+
+
+
+            const Searchlinskytemp = [{
+
+                    patintId: '1234',
+                    patientName: '測試',
+                    flycomp: '凌天',
+                },
+                {
+
+                    patintId: '4567',
+                    patientName: '雷洛',
+                    flycomp: '凌天',
+
+                },
+                {
+                    patintId: '3686',
+                    patientName: '關東師',
+                    flycomp: '凌天',
+                },
+                {
+                    patintId: '4886',
+                    patientName: '新生命',
+                    flycomp: '凌天',
+                },
+                {
+                    patintId: '5686',
+                    patientName: '小組教會',
+                    flycomp: '凌天',
+                },
+                {
+                    patintId: '7686',
+                    patientName: '小組教會',
+                    flycomp: '凌天',
+                },
+                {
+                    patintId: '9686',
+                    patientName: '小組教會',
+                    flycomp: '凌天',
+                },
+                {
+                    patintId: '34686',
+                    patientName: '小組教會',
+                    flycomp: '凌天',
+                },
+            ];
+
+            const Searchairretemp = [{
+
+                    patintId: '1234',
+                    patientName: '測試',
+                    flycomp: '飛特立',
+                },
+                {
+
+                    patintId: '7890',
+                    patientName: '測試2',
+                    flycomp: '飛特立',
+                },
+                {
+
+                    patintId: '4567',
+                    patientName: '雷洛',
+                    flycomp: '飛特立',
+
+                },
+                {
+                    patintId: '3686',
+                    patientName: '關東師',
+                    flycomp: '飛特立',
+                },
+                {
+                    patintId: '4886',
+                    patientName: '新生命',
+                    flycomp: '飛特立',
+                },
+                {
+                    patintId: '5686',
+                    patientName: '小組教會',
+                    flycomp: '飛特立',
+                },
+                {
+                    patintId: '7686',
+                    patientName: '小組教會',
+                    flycomp: '飛特立',
+                },
+                {
+                    patintId: '9686',
+                    patientName: '小組教會',
+                    flycomp: '飛特立',
+                },
+                {
+                    patintId: '34686',
+                    patientName: '小組教會',
+                    flycomp: '飛特立',
+                },
+            ];
+
+
+            if (this.airreswitch === "凌天")
+                this.desserts = Searchlinskytemp;
+            else if (this.airreswitch === "飛特立")
+                this.desserts = Searchairretemp;
+
+
+            // console.log("SearchAirrlist");
+
+        },
+        InitShowDb: function() {
+
+
+
+        },
+        InitListindexDb: function() {
+
+
+
+
+        },
+        InitA3vueindexDb: function() {
+
+
+
+
+        },
+        InitlingvueindexDb: function() {
+
+
+
+        },
+        reciveSignClick: function() {
+
+
+            console.log("reciveSignClick");
+        },
+        SendJsonClick: function() {
+
+
+            console.log("SendJsonClick");
+        }
+
+    }
+
+};
+</script>

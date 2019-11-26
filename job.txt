@@ -1,0 +1,5 @@
+
+離線式網頁
+啟動-物件: 內建網頁 browser 去看空審網頁
+
+https://v2.airreferral.datacom.com.tw/Settings/Login.aspx
